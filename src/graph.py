@@ -80,7 +80,7 @@ prompt_template = ChatPromptTemplate(
 def chatbot(state: MessagesState):
     """Nó inicial para consultar ou responder"""
     prompt = prompt_template.invoke(state['messages'])
-    llm_with_tools = llm.bind_tools(tools, tool_choice="any")
+    llm_with_tools = llm.bind_tools(tools)
     response = llm_with_tools.invoke(prompt)
    
     return {'messages': response}
