@@ -1,133 +1,41 @@
-from dotenv import load_dotenv
-from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
-from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_community.document_loaders import TextLoader, UnstructuredExcelLoader
-from langchain_core.tools import tool
 from langgraph.graph import StateGraph, MessagesState, START, END
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.prebuilt.tool_node import ToolNode, tools_condition
+from langgraph.prebuilt.tool_node import tools_condition
 from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.messages import SystemMessage
+from nodes import consultar_ou_responder, gerar_resposta, atualizar_perfil
+from tools import tools_node
 
-# Carregando as variáveis de ambiente
-load_dotenv()
-
-# Iniciando o LLM
-llm = ChatVertexAI(model_name='gemini-1.5-flash')
-
-# Iniciando os embeddings
-embeddings = VertexAIEmbeddings('textembedding-gecko-multilingual@001')
-vector_store_instrucoes = InMemoryVectorStore(embeddings)
-vector_store_imoveis = InMemoryVectorStore(embeddings)
-
-# Carregando os documentos
-loader_instrucoes = TextLoader(r'C:\Users\Asus\PROJETOS_DEV\RagLabs\ex03_atendente_imobiliario2\instrucoes.txt', encoding="utf-8")
-docs_instrucoes = loader_instrucoes.load()
-
-loader_imoveis = UnstructuredExcelLoader(r'C:\Users\Asus\PROJETOS_DEV\RagLabs\ex03_atendente_imobiliario2\dados_imoveis.xlsx', encoding="utf-8")
-docs_imoveis = loader_imoveis.load()
-
-# Dividindo os documentos
-text_splitter1 = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=150)
-text_splitter2 = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
-split_instrucoes = text_splitter1.split_documents(docs_instrucoes)
-split_imoveis = text_splitter2.split_documents(docs_imoveis)
-
-# Adiciona os documentos aos vector_stores
-vector_store_imoveis.add_documents(split_imoveis)
-vector_store_instrucoes.add_documents(split_instrucoes)
-
-
-# ----------------------------------------------------------------------------
-# PREPARANDO AS FERRAMENTAS
-# ----------------------------------------------------------------------------
-
-@tool
-def buscar_imoveis (query: str) -> str:
-    """Buscar imóveis disponíveis para locação/aluguel"""
-    docs = vector_store_imoveis.similarity_search(query)
-    response = "\n\n".join([doc.page_content for doc in docs])
-    return response
-
-@tool
-def ler_instrucoes (query: str) -> str:
-    """Instruções sobre processos administrativos da Imobiliária Stylus"""
-    docs = vector_store_instrucoes.similarity_search(query)
-    return "\n\n".join([doc.page_content for doc in docs])
-
-tools = [buscar_imoveis, ler_instrucoes]
-tools_node = ToolNode(tools)
-
-# ----------------------------------------------------------------------------
-# PREPARANDO O PROMPT_TEMPLATE
-# ----------------------------------------------------------------------------
-
-prompt_template = ChatPromptTemplate(
-    [
-        (
-            "system",
-            "Você é um atendente da Imobiliária Stylus chamado 'StylusBot'. Responda da melhor maneira possível. Utilize as ferramentas sempre que precisar. Se não souber a resposta, basta dizer que não sabe."
-        ),
-        MessagesPlaceholder(variable_name='messages')
-    ]
-)
-
-# ----------------------------------------------------------------------------
-# PREPARANDO OS NÓS
-# ----------------------------------------------------------------------------
-
-def chatbot(state: MessagesState):
-    """Nó inicial para consultar ou responder"""
-    prompt = prompt_template.invoke(state['messages'])
-    llm_with_tools = llm.bind_tools(tools)
-    response = llm_with_tools.invoke(prompt)
-   
-    return {'messages': response}
-
-def gerar_resposta(state: MessagesState):
-    """Gerando respostas com base nas ferramentas"""
-    list_messages_tools = [m for m in reversed(state['messages']) if m.type == 'tool']
-    docs_messages_tools = '\n\n'.join(m.content for m in reversed(list_messages_tools))
-
-    system_message = SystemMessage(
-        'Você é um assistente imobiliário. Sempre formate as respostas de imóveis da seguinte maneira:\n\n'
-        '**🏠 Imóvel encontrado!**\n\n'
-        '* 📍 **Endereço:** [endereço do imóvel]\n'
-        '* 🏡 **Descrição:** [descrição curta do imóvel]\n'
-        '* 💰 **Valor:** [valor do aluguel + encargos]\n'
-        '* 🔗 **Links de anúncio:** [links disponíveis]\n\n'
-        'Se não encontrar imóveis, apenas diga "No momento, não temos imóveis disponíveis com essas características."'
-        '\n\n' + docs_messages_tools
-    )
-
-    conversation_messages = [
-        m for m in state['messages']
-        if m.type in ('system', 'human')
-        or (m.type == 'ia' and not m.tool_calls)
-    ]
-    
-    prompt = [system_message] + conversation_messages
-
-    return {'messages': llm.invoke(prompt)}
 
 # ----------------------------------------------------------------------------
 # PREPARANDO O FLUXO
 # ----------------------------------------------------------------------------
 
+# Inicializa o grafo de estados com o estado inicial MessagesState
 graph_builder = StateGraph(MessagesState)
 
-# Adicionando os nós
-graph_builder.add_node('chatbot', chatbot)
-graph_builder.add_node('tools', tools_node)
-graph_builder.add_node('gerar_resposta', gerar_resposta)
+# Adiciona os nós ao grafo
+graph_builder.add_node("consultar_ou_responder", consultar_ou_responder)  # Decide se consulta ferramentas ou responde diretamente
+graph_builder.add_node("tools", tools_node)  # Nó para executar ferramentas
+graph_builder.add_node("gerar_resposta", gerar_resposta)  # Gera uma resposta final
+graph_builder.add_node("atualizar_perfil", atualizar_perfil)  # Atualiza o perfil do cliente
 
-# Adicionando as pontes
-graph_builder.add_edge(START, 'chatbot')
-graph_builder.add_conditional_edges('chatbot', tools_condition, {'tools': 'tools', END: END})
-graph_builder.add_edge('tools', 'gerar_resposta')
-graph_builder.add_edge('gerar_resposta', END)
+# Define as transições entre os nós
+graph_builder.add_edge(START, "atualizar_perfil")  # O fluxo começa atualizando o perfil
+graph_builder.add_conditional_edges(
+    "atualizar_perfil", 
+    tools_condition,  # Condição para decidir se ferramentas são necessárias
+    {"tools": "tools", END: "consultar_ou_responder"}  # Vai para "tools" ou "consultar_ou_responder"
+)
+graph_builder.add_edge("atualizar_perfil", "consultar_ou_responder")  # Caminho direto para "consultar_ou_responder"
+graph_builder.add_conditional_edges(
+    "consultar_ou_responder", 
+    tools_condition,  # Condição para decidir se ferramentas são necessárias
+    {"tools": "tools", END: END}  # Vai para "tools" ou encerra o fluxo
+)
+graph_builder.add_edge("tools", "gerar_resposta")  # Após usar ferramentas, gera uma resposta
+graph_builder.add_edge("gerar_resposta", END)  # Finaliza o fluxo após gerar a resposta
 
-# Compilando e preparando o fluxo
+# Configura o sistema de checkpoint para salvar o estado
 memory = MemorySaver()
+
+# Compila o grafo com o sistema de checkpoint
 graph = graph_builder.compile(checkpointer=memory)
