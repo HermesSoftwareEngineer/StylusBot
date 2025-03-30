@@ -2,6 +2,12 @@ from flask import Flask
 import os
 from flask_cors import CORS
 
+import sys
+import os
+
+# Adiciona o diretório src ao caminho do Python
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)

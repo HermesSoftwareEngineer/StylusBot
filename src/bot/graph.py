@@ -1,9 +1,8 @@
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.prebuilt.tool_node import tools_condition
 from langgraph.checkpoint.memory import MemorySaver
-from nodes import consultar_ou_responder, gerar_resposta, atualizar_perfil
-from tools import tools_node
-
+from .nodes import consultar_ou_responder, gerar_resposta, atualizar_perfil
+from .tools import tools_node
 
 # ----------------------------------------------------------------------------
 # PREPARANDO O FLUXO

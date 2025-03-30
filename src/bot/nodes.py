@@ -1,7 +1,7 @@
-from vector_stores import llm 
+from .vector_stores import llm 
 from langchain_core.messages import SystemMessage
 from langgraph.graph import MessagesState
-from tools import tools, gerenciar_perfil_cliente
+from .tools import tools, gerenciar_perfil_cliente
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 prompt_template = ChatPromptTemplate(

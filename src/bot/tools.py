@@ -1,4 +1,4 @@
-from vector_stores import vector_store_imoveis, vector_store_perguntas, vector_store_perfis
+from .vector_stores import vector_store_imoveis, vector_store_perguntas, vector_store_perfis
 from langchain_core.tools import tool
 from langgraph.prebuilt.tool_node import ToolNode
 import sqlite3
