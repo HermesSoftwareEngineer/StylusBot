@@ -8,11 +8,12 @@ from langchain_core.messages import BaseMessage
 class StateAtendimento(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     refined: str
+    intention: dict[str, str]
 
 prompt_template_responder = ChatPromptTemplate.from_messages([
     (
         "system", 
-        "Você é o StylusBot, um atendente especializado em imóveis. "
+        "Você é o StylusBot, um atendente especializado em imóveis. Sempre se apresente ao falar com o cliente"
         "Responda de forma objetiva e clara, utilizando no máximo 3 frases para cada resposta. "
         "Seu objetivo é esclarecer dúvidas do usuário com precisão. Seja sempre educado."
     ),
