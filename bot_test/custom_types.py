@@ -3,12 +3,16 @@ from langgraph.graph.message import add_messages
 from typing import Annotated
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import BaseMessage
+from langchain import hub
 
 # Personalizando o estado do atendimento/mensagens
 class StateAtendimento(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     refined: str
     intention: dict[str, str]
+    consultar: str
+    query: str
+    result: str
 
 prompt_template_responder = ChatPromptTemplate.from_messages([
     (
@@ -19,3 +23,5 @@ prompt_template_responder = ChatPromptTemplate.from_messages([
     ),
     MessagesPlaceholder(variable_name="messages")
 ])
+
+query_prompt_template = hub.pull("langchain-ai/sql-query-system-prompt")

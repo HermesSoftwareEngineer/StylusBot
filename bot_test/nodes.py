@@ -1,6 +1,14 @@
-from custom_types import StateAtendimento, prompt_template_responder
+from custom_types import StateAtendimento, prompt_template_responder, query_prompt_template
 from langchain_core.messages import SystemMessage, AIMessage
 from llm import llm
+from typing_extensions import Annotated, TypedDict
+from create_db import engine as db
+from sqlalchemy import MetaData
+
+class QueryOutput(TypedDict):
+    """Generated SQL query."""
+
+    query: Annotated[str, ..., "Syntactically valid SQL query."]
 
 def refinar(state: StateAtendimento):
 
@@ -67,17 +75,66 @@ def classificar_intencao(state: StateAtendimento):
     return { **state, 'intention': {response: intention_map[response]}}
 
 def coletar_dados(state: StateAtendimento):
-    system_message = SystemMessage(content=
-        f"""
-        Para realizar uma consulta de imóveis no banco de dados. Precisamos ter uma das combinações de informações:
-        - Combinação 1: Tipo de imóvel, bairros procurados e valor máximo disposto a pagar
-        - Combinação 2: Código do anúncio, apenas
+    repetir = True
+    response_message = "Sem erros por enquanto"
 
-        VERIFIQUE SE TEMOS UMA DAS COMBINAÇÕES COM INFORMAÇÕES COMPLETAS. SE NÃO, SOLICITE O QUE FALTA AO USUÁRIO. 
-        """
+    while repetir:
+        system_message = SystemMessage(content=
+            """
+            Para realizar uma consulta de imóveis no banco de dados, precisamos ter uma das combinações de informações:
+            - Combinação 1: Tipo de imóvel, bairros procurados e valor máximo disposto a pagar
+            - Combinação 2: Código do anúncio, apenas
+
+            Verifique se temos uma das combinações com informações completas. Se não, solicite o que falta ao usuário.
+
+            Retorne com este formato JSON:
+            {
+                "response": "Resposta que será exibida ao usuário",
+                "consultar": true/false
+            }
+            """
+        )
+
+        # Adiciona a mensagem de resposta anterior ao prompt
+        prompt = state['messages'] + [SystemMessage(content=state['refined'].content)] + [system_message] + [AIMessage(content=response_message)]
+        llm_response = llm.invoke(prompt)
+
+        try:
+            # Parse the LLM response como JSON
+            parsed_response = llm_response.json()
+            response_message = parsed_response.get("response", "Erro ao processar a resposta.")
+            consultar = "true" if parsed_response.get("consultar", False) else "false"
+            repetir = False  # Sai do loop se o JSON for válido
+        except (ValueError, AttributeError):
+            # Trata respostas inválidas ou malformadas
+            response_message = "Não foi possível interpretar a resposta. Por favor, reformule sua solicitação."
+            consultar = "false"
+            repetir = True  # Continua no loop para tentar novamente
+
+    # Atualiza o estado com a resposta e a flag de consulta
+    return {
+        **state,
+        "messages": [AIMessage(content=response_message)],
+        "consultar": consultar
+    }
+
+def escrever_consulta(state: StateAtendimento):
+    """Gera a consulta SQL para buscar informações"""
+    metadata = MetaData()
+    metadata.reflect(bind=db) 
+    table_info = {table.name: [col.name for col in table.columns] for table in metadata.sorted_tables}
+
+    prompt = query_prompt_template.invoke(
+        {
+            "dialect": db.dialect.name,
+            "top_k": 10,
+            "table_info": table_info,
+            "input": state["refined"]
+        }
     )
 
-    prompt = state['messages'] + [SystemMessage(content=state['refined'].content)] + [system_message]
-    response = llm.invoke(prompt)
+    llm_estruturado = llm.with_structured_output(QueryOutput)
+    result = llm_estruturado.invoke(prompt)
+    print(f"Resultado: {result['query']}")
 
-    return { **state, "messages": response }
+    return { **state, "query": result["query"] }

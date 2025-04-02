@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
-from nodes import responder, refinar, classificar_intencao, coletar_dados
+from nodes import responder, refinar, classificar_intencao, coletar_dados, escrever_consulta
 from custom_types import StateAtendimento
 
 # Iniciando o grafo
@@ -11,6 +11,7 @@ graph_builder.add_node("responder", responder)
 graph_builder.add_node("node_refinar", refinar)
 graph_builder.add_node("classificar_intencao", classificar_intencao)
 graph_builder.add_node("coletar_dados", coletar_dados)
+graph_builder.add_node("escrever_consulta", escrever_consulta)
 
 # Personalizando as pontes/edges
 graph_builder.add_edge(START, "node_refinar")
@@ -26,7 +27,14 @@ graph_builder.add_conditional_edges(
         "5": "responder"
     }
 )
-graph_builder.add_edge("coletar_dados", END)
+graph_builder.add_conditional_edges(
+    "coletar_dados",
+    lambda state: state["consultar"],
+    {
+        "true": "escrever_consulta",
+        "false": END
+    }
+)
 graph_builder.add_edge("responder", END)
 
 # Compilando o grafo
