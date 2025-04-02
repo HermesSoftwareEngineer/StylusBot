@@ -4,6 +4,7 @@ from llm import llm
 from typing_extensions import Annotated, TypedDict
 from create_db import engine as db
 from sqlalchemy import MetaData
+import json
 
 class QueryOutput(TypedDict):
     """Generated SQL query."""
@@ -97,19 +98,16 @@ def coletar_dados(state: StateAtendimento):
 
         # Adiciona a mensagem de resposta anterior ao prompt
         prompt = state['messages'] + [SystemMessage(content=state['refined'].content)] + [system_message] + [AIMessage(content=response_message)]
-        llm_response = llm.invoke(prompt)
+        llm_response = llm.invoke(prompt).content
+        llm_response = llm_response.replace("```json", "").replace("```", "").strip()
 
-        try:
-            # Parse the LLM response como JSON
-            parsed_response = llm_response.json()
-            response_message = parsed_response.get("response", "Erro ao processar a resposta.")
-            consultar = "true" if parsed_response.get("consultar", False) else "false"
-            repetir = False  # Sai do loop se o JSON for válido
-        except (ValueError, AttributeError):
-            # Trata respostas inválidas ou malformadas
-            response_message = "Não foi possível interpretar a resposta. Por favor, reformule sua solicitação."
-            consultar = "false"
-            repetir = True  # Continua no loop para tentar novamente
+        response_dict = json.loads(llm_response)
+    
+        consultar = response_dict.get("consultar")
+        response_message = response_dict.get("response")
+        print(f"Consultar::{consultar}::")
+        print("Response_message: ", response_message)
+        repetir = False
 
     # Atualiza o estado com a resposta e a flag de consulta
     return {
