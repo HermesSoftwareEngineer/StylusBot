@@ -1,40 +1,20 @@
-from langgraph.graph import StateGraph, MessagesState, START, END
+from bot.custom_types import State
+from langgraph.graph import StateGraph, START, END
+from bot.nodes import consultar_ou_responder, tools_node, responder
 from langgraph.prebuilt.tool_node import tools_condition
 from langgraph.checkpoint.memory import MemorySaver
-from .nodes import consultar_ou_responder, gerar_resposta, atualizar_perfil
-from .tools import tools_node
 
-# ----------------------------------------------------------------------------
-# PREPARANDO O FLUXO
-# ----------------------------------------------------------------------------
+graph_builder = StateGraph(State)
 
-# Inicializa o grafo de estados com o estado inicial MessagesState
-graph_builder = StateGraph(MessagesState)
+graph_builder.add_node("consultar_ou_responder", consultar_ou_responder)
+graph_builder.add_node("tools", tools_node)
+graph_builder.add_node("responder", responder)
 
-# Adiciona os nós ao grafo
-graph_builder.add_node("consultar_ou_responder", consultar_ou_responder)  # Decide se consulta ferramentas ou responde diretamente
-graph_builder.add_node("tools", tools_node)  # Nó para executar ferramentas
-graph_builder.add_node("gerar_resposta", gerar_resposta)  # Gera uma resposta final
-graph_builder.add_node("atualizar_perfil", atualizar_perfil)  # Atualiza o perfil do cliente
+graph_builder.add_edge(START, "consultar_ou_responder")
+graph_builder.add_conditional_edges("consultar_ou_responder", tools_condition, {"tools": "tools", END: END})
+graph_builder.add_edge("tools", "responder")
+graph_builder.add_edge("responder", END)
+graph_builder.add_edge("consultar_ou_responder", END)
 
-# Define as transições entre os nós
-graph_builder.add_edge(START, "atualizar_perfil")  # O fluxo começa atualizando o perfil
-graph_builder.add_conditional_edges(
-    "atualizar_perfil", 
-    tools_condition,  # Condição para decidir se ferramentas são necessárias
-    {"tools": "tools", END: "consultar_ou_responder"}  # Vai para "tools" ou "consultar_ou_responder"
-)
-graph_builder.add_edge("atualizar_perfil", "consultar_ou_responder")  # Caminho direto para "consultar_ou_responder"
-graph_builder.add_conditional_edges(
-    "consultar_ou_responder", 
-    tools_condition,  # Condição para decidir se ferramentas são necessárias
-    {"tools": "tools", END: END}  # Vai para "tools" ou encerra o fluxo
-)
-graph_builder.add_edge("tools", "gerar_resposta")  # Após usar ferramentas, gera uma resposta
-graph_builder.add_edge("gerar_resposta", END)  # Finaliza o fluxo após gerar a resposta
-
-# Configura o sistema de checkpoint para salvar o estado
 memory = MemorySaver()
-
-# Compila o grafo com o sistema de checkpoint
-graph = graph_builder.compile(checkpointer=memory)
+app = graph_builder.compile(checkpointer=memory)

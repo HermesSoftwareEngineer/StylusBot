@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from src.bot.graph import graph
+from src.bot.graph import app
 
 bp = Blueprint('chat', __name__, url_prefix='/chat')
 
@@ -26,7 +26,7 @@ def answer():
         config = {'configurable': {'thread_id': thread_id}}
 
         # Chamando o llm
-        response = graph.invoke({'messages': user_input}, config)
+        response = app.invoke({'messages': user_input}, config)
 
         return {"resposta": response['messages'][-1].content}, 200
 
