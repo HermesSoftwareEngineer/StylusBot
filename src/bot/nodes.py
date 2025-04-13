@@ -1,14 +1,15 @@
 from langgraph.prebuilt.tool_node import ToolNode
-from bot.tools import tools
-from bot.custom_types import State
-from bot.llms import llm
+from tools import tools
+from custom_types import State, prompt_atendente
+from llms import llm
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage
 
 tools_node = ToolNode(tools)
 
 def consultar_ou_responder(state: State):
-    response = llm.bind_tools(tools).invoke(state["messages"])
+    prompt = prompt_atendente.invoke(state["messages"])
+    response = llm.bind_tools(tools).invoke(prompt)
     # print(f"Resposta de consulta ou responder: ", response)
     return {"messages": response}
 

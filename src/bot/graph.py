@@ -1,6 +1,6 @@
-from bot.custom_types import State
+from custom_types import State
 from langgraph.graph import StateGraph, START, END
-from bot.nodes import consultar_ou_responder, tools_node, responder
+from nodes import consultar_ou_responder, tools_node, responder
 from langgraph.prebuilt.tool_node import tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 

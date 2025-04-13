@@ -1,8 +1,8 @@
 from langchain_core.tools import tool
-from bot.llms import llm
+from llms import llm
 from langchain_core.prompts import ChatPromptTemplate
 from langchain import hub
-from bot.create_db import engine as db
+from create_db import engine as db
 from sqlalchemy import MetaData
 from typing_extensions import Annotated, TypedDict
 import pandas as pd

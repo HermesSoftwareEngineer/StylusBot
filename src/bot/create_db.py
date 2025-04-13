@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-df = pd.read_excel(r"C:\Users\hermes.barbosa\PROJETOS_DEV\RagLabs\sql_agent\dados_imoveis.xlsx")
+df = pd.read_excel(r"C:\Users\Asus\PROJETOS_DEV\StylusBot\src\bot\dados_imoveis.xlsx")
 
 engine = create_engine("sqlite:///meu_banco.db")
 
