@@ -6,6 +6,7 @@ from create_db import engine as db
 from sqlalchemy import MetaData
 from typing_extensions import Annotated, TypedDict
 import pandas as pd
+from vector_stores import vector_store_FAQ
 
 class QueryOutput(TypedDict):
     """Generated SQL query."""
@@ -44,4 +45,10 @@ def consultar_imoveis(input: str):
 
     return {"result": result}
 
-tools = [consultar_imoveis]
+@tool
+def consultar_perguntas_frequentes(input: str):
+    """Use essa ferramenta para saber o que responder ao usuário perguntas frequentes de maneira assertiva"""
+    result = vector_store_FAQ.similarity_search(input)
+    return {"result": result}
+
+tools = [consultar_imoveis, consultar_perguntas_frequentes]
