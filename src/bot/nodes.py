@@ -19,14 +19,12 @@ def responder(state: State):
     docs_messages_tools = '\n\n'.join(m.content for m in reversed(list_messages_tools))
 
     system_message = SystemMessage(
-        'Você é um assistente imobiliário. Formate as respostas de imóveis de maneira similar a indicada abaixo:\n\n'
-        '\n\n'
-        '(TENHA SEMPRE UMA INTRODUÇÃO GENTIL): Olha, procurei aqui no meu banco de dados e encontrei algumas opções similares ao que você procura...'
+        'SE TIVER IMÓVEIS NO BANCO DE DADOS (result), responda com:'
         '* 📍 **Endereço:** [endereço do imóvel]\n'
         '* 🏡 **Descrição:** [descrição curta do imóvel]\n'
         '* 💰 **Valor:** [valor do aluguel + encargos]\n'
         '* 🔗 **Links de anúncio:** [se não tiver links, oculte essa parte]\n\n'
-        'Se não encontrar imóveis, apenas diga "No momento, não temos imóveis disponíveis com essas características."'
+        'SE NÃO TIVER IMÓVEIS NO BANCO DE DADOS (result), apenas diga que não tem imóveis com as características, mas poderia tentar com outras características. Seja gentil.'
         '\n\n' + docs_messages_tools
     )
 

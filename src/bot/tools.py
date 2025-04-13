@@ -14,9 +14,9 @@ class QueryOutput(TypedDict):
 
 query_prompt_template = hub.pull("langchain-ai/sql-query-system-prompt")
 
-# @tool
+@tool
 def consultar_imoveis(input: str):
-    """Consultar imóveis de acordo com o input"""
+    """Use esta ferramenta para consultar imóveis disponíveis com base nos critérios fornecidos pelo usuário."""
     metadata = MetaData()
     metadata.reflect(bind=db) 
     table_info = {table.name: [col.name for col in table.columns] for table in metadata.sorted_tables}
@@ -35,6 +35,9 @@ def consultar_imoveis(input: str):
     # print(f"query gerada: {query['query']}")
 
     df_filtrado = pd.read_sql(query["query"], con=db)
+    
+    if df_filtrado.empty:
+        return {"result": "Nenhum imóvel encontrado para os critérios fornecidos. Informe ao usuário que não tem imóveis para esses critérios, que você pode tentar com critérios diferentes."}
 
     result = df_filtrado.to_string()
     # print(f"Resultado: {result}")
