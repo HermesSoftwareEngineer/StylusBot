@@ -4,6 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 class State(TypedDict):
     messages: Annotated[list[str], add_messages]
+    atendimentoCadastrado: bool
 
 class StateAtendimento(TypedDict):
     Codigo: str

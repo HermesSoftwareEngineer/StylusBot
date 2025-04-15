@@ -55,14 +55,47 @@ def consultar_perguntas_frequentes(input: str):
     result = vector_store_FAQ.similarity_search(input)
     return {"result": result}
 
+# @tool
+# def atualizar_atendimento(input: StateAtendimento):
+#     """Sempre que novas informações sobre o perfil do cliente, do atendimento ou sobre o cliente chegarem, atualize o atendimento utilizando essa ferramenta"""
+#     metadata = MetaData()
+#     metadata.reflect(bind=db_atendimentos) 
+#     table_info = {table.name: [col.name for col in table.columns] for table in metadata.sorted_tables}
+    
+#     input_customize = input + "\n\nFaça uma consulta SQL que atualiza o atendimento do cliente com base em novas informações adquiridas."
+#     prompt = query_prompt_template.invoke(
+#         {
+#             "dialect": db_atendimentos.engine.name,
+#             "top_k": 5,
+#             "table_info": table_info,
+#             "input": input_customize
+#         }
+#     )
+
+#     query = llm.with_structured_output(QueryOutput).invoke(prompt)
+#     # print(f"query gerada: {query['query']}")
+
+#     df_filtrado = pd.read_sql(query["query"], con=db_atendimentos)
+    
+#     if df_filtrado.empty:
+#         return {
+#             "result": "Nenhum atendimento encontrado para os critérios fornecidos. Informe ao usuário que não há atendimentos com esses dados e que é possível tentar outros critérios."
+#         }
+
+#     result = df_filtrado.to_string()
+#     # print(f"Resultado: {result}")
+
+#     return {"result": result}
+    
 @tool
-def atualizar_atendimento(input: StateAtendimento):
-    """Use essa ferramenta para atualizar ou criar o atendimento do cliente. TODA CONVERSA DEVE TER UM ATENDIMENTO REGISTRADO, POR ISSO, UTILIZE ESSA FERRAMENTA CONSTANTEMENTE."""
+def criar_atendimento(input: StateAtendimento):
+    """Criar um atendimento, cadastrar"""
+    input_customize = "Elabore um código SQL para criar um atendimento conforme as informações fornecidas.\n\n" + input
+
     metadata = MetaData()
     metadata.reflect(bind=db_atendimentos) 
     table_info = {table.name: [col.name for col in table.columns] for table in metadata.sorted_tables}
     
-    input_customize = input + "\n\nFaça uma consulta SQL que atualiza ou cria o atendimento do cliente. Encontre o cliente via o telefone dele"
     prompt = query_prompt_template.invoke(
         {
             "dialect": db_atendimentos.engine.name,
@@ -75,19 +108,10 @@ def atualizar_atendimento(input: StateAtendimento):
     query = llm.with_structured_output(QueryOutput).invoke(prompt)
     # print(f"query gerada: {query['query']}")
 
-    df_filtrado = pd.read_sql(query["query"], con=db_atendimentos)
-    
-    if df_filtrado.empty:
-        return {
-            "result": "Nenhum atendimento encontrado para os critérios fornecidos. Informe ao usuário que não há atendimentos com esses dados e que é possível tentar outros critérios."
-        }
+    with db_atendimentos.connect() as connection:
+        connection.execute(query["query"])
+        connection.commit()
 
-    result = df_filtrado.to_string()
-    # print(f"Resultado: {result}")
+    return {"atendimentoCadastrado": True}
 
-    return {"result": result}
-    
-
-    
-
-tools = [consultar_imoveis, consultar_perguntas_frequentes, atualizar_atendimento]
+tools = [consultar_imoveis, consultar_perguntas_frequentes, criar_atendimento]
