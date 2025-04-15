@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from src.bot.graph import app
+from bot.graph import app
 
 bp = Blueprint('chat', __name__, url_prefix='/chat')
 

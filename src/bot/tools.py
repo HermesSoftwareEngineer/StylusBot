@@ -47,8 +47,8 @@ def consultar_imoveis(input: str):
 
 @tool
 def consultar_perguntas_frequentes(input: str):
-    """Use essa ferramenta para saber o que responder ao usuário perguntas frequentes de maneira assertiva
-        As perguntas podem ser sobre: Como alugar, documentação, caução, cauções, formas de garantia, visitas, agendamento de visitas, ficha cadastral, etc...
+    """Use esta ferramenta sempre que o cliente fizer uma pergunta que pode estar no banco de Perguntas Frequentes (FAQ). 
+        NÃO tente responder sozinho. Primeiro consulte aqui.
     """
     result = vector_store_FAQ.similarity_search(input)
     return {"result": result}

@@ -7,6 +7,7 @@ import os
 
 # Adiciona o diretório src ao caminho do Python
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+print(sys.path) 
 
 def create_app(test_config=None):
 
