@@ -53,4 +53,9 @@ def consultar_perguntas_frequentes(input: str):
     result = vector_store_FAQ.similarity_search(input)
     return {"result": result}
 
+@tool
+def atualizar_atendimento(input: str):
+    """Use essa ferramenta para atualizar ou criar o atendimento do cliente. TODA CONVERSA DEVE TER UM ATENDIMENTO REGISTRADO, POR ISSO, UTILIZE ESSA FERRAMENTA CONSTANTEMENTE."""
+    
+
 tools = [consultar_imoveis, consultar_perguntas_frequentes]
