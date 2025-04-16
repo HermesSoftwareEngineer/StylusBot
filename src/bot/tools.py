@@ -87,29 +87,48 @@ def consultar_perguntas_frequentes(input: str):
 
 #     return {"result": result}
     
-@tool
+# @tool
 def criar_atendimento(input: StateAtendimento):
-    """Criar um atendimento, cadastrar"""
-    input_customize = "Elabore um código SQL para criar um atendimento conforme as informações fornecidas.\n\n" + input
-
+    """Criar um atendimento e cadastrá-lo diretamente no banco de dados."""
     metadata = MetaData()
-    metadata.reflect(bind=db_atendimentos) 
-    table_info = {table.name: [col.name for col in table.columns] for table in metadata.sorted_tables}
-    
-    prompt = query_prompt_template.invoke(
-        {
-            "dialect": db_atendimentos.engine.name,
-            "top_k": 5,
-            "table_info": table_info,
-            "input": input_customize
-        }
-    )
+    metadata.reflect(bind=db_atendimentos)
+    atendimentos_table = metadata.tables.get("atendimentos_temp")  # Substitua "atendimentos" pelo nome real da tabela
 
-    query = llm.with_structured_output(QueryOutput).invoke(prompt)
-    # print(f"query gerada: {query['query']}")
+    if atendimentos_table is None:
+        raise ValueError("Tabela 'atendimentos' não encontrada no banco de dados.")
 
+    # Construa o dicionário com os dados do atendimento
+    atendimento_data = {
+        "Codigo": input["Codigo"],
+        "Finalidade": input["Finalidade"],
+        "ClienteNome": input["ClienteNome"],
+        "ClienteTelefone": input["ClienteTelefone"],
+        "ClienteEmail": input["ClienteEmail"],
+        "Midia": input["Midia"],
+        "Tipo": input["Tipo"],
+        "SituacaoDescarte": input["SituacaoDescarte"],
+        "ImoveisCarrinho": ",".join(input["ImoveisCarrinho"]),  # Lista convertida para string
+        "PerfilQuartos": input["PerfilQuartos"],
+        "PerfilBanhos": input["PerfilBanhos"],
+        "PerfilSuites": input["PerfilSuites"],
+        "PerfilVagas": input["PerfilVagas"],
+        "PerfilValorDe": input["PerfilValorDe"],
+        "PerfilValorAte": input["PerfilValorAte"],
+        "PerfilAreaInternaDe": input["PerfilAreaInternaDe"],
+        "PerfilAreaInternaAte": input["PerfilAreaInternaAte"],
+        "PerfilTipos": ",".join(input["PerfilTipos"]),  # Lista convertida para string
+        "PerfilCidades": ",".join(input["PerfilCidades"]),  # Lista convertida para string
+        "PerfilBairros": ",".join(input["PerfilBairros"]),  # Lista convertida para string
+        "PerfilRegioes": ",".join(input["PerfilRegioes"]),  # Lista convertida para string
+        "Valor": input["Valor"],
+        "PerfilSistema": input["PerfilSistema"],
+        "Indicacao": input["Indicacao"],
+    }
+
+    # Insere os dados no banco de dados
     with db_atendimentos.connect() as connection:
-        connection.execute(query["query"])
+        insert_stmt = atendimentos_table.insert().values(atendimento_data)
+        connection.execute(insert_stmt)
         connection.commit()
 
     return {"atendimentoCadastrado": True}

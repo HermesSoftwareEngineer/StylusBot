@@ -1,10 +1,56 @@
-import pandas as pd 
 from sqlalchemy import create_engine
 
+# Conectar ao banco
 engine = create_engine("sqlite:///atendimentos.db")
-df = pd.read_excel(r"C:\Users\Asus\PROJETOS_DEV\StylusBot\src\bot\dados_atendimentos.xlsx")
 
-df = df.drop(["UnidadeCodigo", "Unidade", "Campanha", "Fase", "Termometro", "Mql", "Corretor", "Equipe", "Situacao", "ImoveisVisita", "ImoveisProposta", "DataHoraInclusao", "UsuarioInclusao", "DataHoraUltimaInteracao", "UltimaInteracao", "UsuarioUltimaInteracao"], axis=1)
+sql_commands = [
+    "DROP TABLE IF EXISTS atendimentos_temp;",
+    """
+    CREATE TABLE atendimentos_temp (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Codigo TEXT,
+        Finalidade TEXT,
+        ClienteNome TEXT,
+        ClienteTelefone TEXT,
+        ClienteEmail TEXT,
+        Midia TEXT,
+        Tipo TEXT,
+        SituacaoDescarte TEXT,
+        ImoveisCarrinho TEXT,
+        PerfilQuartos INTEGER,
+        PerfilBanhos INTEGER,
+        PerfilSuites INTEGER,
+        PerfilVagas INTEGER,
+        PerfilValorDe REAL,
+        PerfilValorAte REAL,
+        PerfilAreaInternaDe REAL,
+        PerfilAreaInternaAte REAL,
+        PerfilTipos TEXT,
+        PerfilCidades TEXT,
+        PerfilBairros TEXT,
+        PerfilRegioes TEXT,
+        Valor REAL,
+        PerfilSistema TEXT,
+        Indicacao TEXT
+    );
+    """,
+    """INSERT INTO atendimentos_temp (
+        Codigo, Finalidade, ClienteNome, ClienteTelefone, ClienteEmail, Midia, Tipo, SituacaoDescarte,
+        ImoveisCarrinho, PerfilQuartos, PerfilBanhos, PerfilSuites, PerfilVagas, PerfilValorDe, PerfilValorAte,
+        PerfilAreaInternaDe, PerfilAreaInternaAte, PerfilTipos, PerfilCidades, PerfilBairros, PerfilRegioes,
+        Valor, PerfilSistema, Indicacao
+    ) 
+    SELECT 
+        Codigo, Finalidade, ClienteNome, ClienteTelefone, ClienteEmail, Midia, Tipo, SituacaoDescarte,
+        ImoveisCarrinho, PerfilQuartos, PerfilBanhos, PerfilSuites, PerfilVagas, PerfilValorDe, PerfilValorAte,
+        PerfilAreaInternaDe, PerfilAreaInternaAte, PerfilTipos, PerfilCidades, PerfilBairros, PerfilRegioes,
+        Valor, PerfilSistema, Indicacao
+    FROM atendimentos;""",
+    "DROP TABLE atendimentos;",
+    "ALTER TABLE atendimentos_temp RENAME TO atendimentos;"
+]
 
-df.to_sql("imoveis", con=engine, if_exists="replace", index=False)
-print(df.columns.tolist())
+# Executando cada comando individualmente
+with engine.connect() as connection:
+    for sql in sql_commands:
+        connection.exec_driver_sql(sql)

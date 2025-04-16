@@ -1,4 +1,4 @@
-from typing_extensions import TypedDict, Annotated
+from typing_extensions import TypedDict, Annotated, Optional, List
 from langgraph.graph.message import add_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
@@ -7,30 +7,30 @@ class State(TypedDict):
     atendimentoCadastrado: bool
 
 class StateAtendimento(TypedDict):
-    Codigo: str
-    Finalidade: str
+    Codigo: Optional[str]
+    Finalidade: Optional[str]
     ClienteNome: str
     ClienteTelefone: str
-    ClienteEmail: str
-    Midia: str
-    Tipo: str
-    SituacaoDescarte: str
-    ImoveisCarrinho: list[str]
-    PerfilQuartos: int
-    PerfilBanhos: int
-    PerfilSuites: int
-    PerfilVagas: int
-    PerfilValorDe: float
-    PerfilValorAte: float
-    PerfilAreaInternaDe: float
-    PerfilAreaInternaAte: float
-    PerfilTipos: list[str]
-    PerfilCidades: list[str]
-    PerfilBairros: list[str]
-    PerfilRegioes: list[str]
-    Valor: float
-    PerfilSistema: str
-    Indicacao: str
+    ClienteEmail: Optional[str]
+    Midia: Optional[str]
+    Tipo: Optional[str]
+    SituacaoDescarte: Optional[str]
+    ImoveisCarrinho: Optional[List[str]]
+    PerfilQuartos: Optional[int]
+    PerfilBanhos: Optional[int]
+    PerfilSuites: Optional[int]
+    PerfilVagas: Optional[int]
+    PerfilValorDe: Optional[float]
+    PerfilValorAte: Optional[float]
+    PerfilAreaInternaDe: Optional[float]
+    PerfilAreaInternaAte: Optional[float]
+    PerfilTipos: Optional[List[str]]
+    PerfilCidades: Optional[List[str]]
+    PerfilBairros: Optional[List[str]]
+    PerfilRegioes: Optional[List[str]]
+    Valor: Optional[float]
+    PerfilSistema: Optional[str]
+    Indicacao: Optional[str]
 
 prompt_atendente = ChatPromptTemplate.from_messages(
     [

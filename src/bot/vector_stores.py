@@ -9,8 +9,8 @@ embeddings = VertexAIEmbeddings('textembedding-gecko-multilingual@001')
 vector_store_FAQ = InMemoryVectorStore(embeddings)
 
 # Carregando os documentos
-# loader_FAQ = TextLoader(r'C:\Users\hermes.barbosa\PROJETOS_DEV\StylusBot\src\bot\FAQ.txt', encoding="utf-8")
-loader_FAQ = TextLoader(r'C:\Users\Asus\PROJETOS_DEV\StylusBot\src\bot\FAQ.txt', encoding="utf-8")
+loader_FAQ = TextLoader(r'C:\Users\hermes.barbosa\PROJETOS_DEV\StylusBot\src\bot\FAQ.txt', encoding="utf-8")
+# loader_FAQ = TextLoader(r'C:\Users\Asus\PROJETOS_DEV\StylusBot\src\bot\FAQ.txt', encoding="utf-8")
 docs_FAQ = loader_FAQ.load()
 
 # Dividindo os documentos

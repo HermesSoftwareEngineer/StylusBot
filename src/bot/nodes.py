@@ -7,6 +7,8 @@ from langchain_core.messages import SystemMessage
 
 tools_node = ToolNode(tools)
 
+# def criar_atendimento(st)
+
 def consultar_ou_responder(state: State):
     prompt = prompt_atendente.invoke(state["messages"])
     response = llm.bind_tools(tools).invoke(prompt)
