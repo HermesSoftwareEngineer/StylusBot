@@ -2,7 +2,7 @@ from langchain_core.tools import tool
 from llms import llm
 from langchain_core.prompts import ChatPromptTemplate
 from langchain import hub
-from create_db import engine as db_imoveis
+from db_imoveis import engine as db_imoveis
 from sqlalchemy import MetaData
 from typing_extensions import Annotated, TypedDict
 import pandas as pd
@@ -87,12 +87,12 @@ def consultar_perguntas_frequentes(input: str):
 
 #     return {"result": result}
     
-# @tool
+@tool
 def criar_atendimento(input: StateAtendimento):
     """Criar um atendimento e cadastrá-lo diretamente no banco de dados."""
     metadata = MetaData()
     metadata.reflect(bind=db_atendimentos)
-    atendimentos_table = metadata.tables.get("atendimentos_temp")  # Substitua "atendimentos" pelo nome real da tabela
+    atendimentos_table = metadata.tables.get("atendimentos")  # Substitua "atendimentos" pelo nome real da tabela
 
     if atendimentos_table is None:
         raise ValueError("Tabela 'atendimentos' não encontrada no banco de dados.")
@@ -133,4 +133,4 @@ def criar_atendimento(input: StateAtendimento):
 
     return {"atendimentoCadastrado": True}
 
-tools = [consultar_imoveis, consultar_perguntas_frequentes, criar_atendimento]
+tools = [consultar_imoveis, consultar_perguntas_frequentes]

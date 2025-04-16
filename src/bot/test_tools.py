@@ -34,6 +34,6 @@ def test_criar_atendimento_valid_data():
     # Call the function and capture the result
     result = criar_atendimento(input_data)
 
-    return {"atendimentoCadastrado": True}, f"Expected True but got {result}"
+    return {"atendimentoCadastrado": True}
 
 print(test_criar_atendimento_valid_data())
