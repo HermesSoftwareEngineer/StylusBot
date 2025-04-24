@@ -51,5 +51,5 @@ prompt_atendente = ChatPromptTemplate.from_messages(
 )
 
 def validar_cadastro_atendimento(state: State):
-    print("State:", state)
+    # print("State:", state)
     return state["atendimentoCadastrado"]

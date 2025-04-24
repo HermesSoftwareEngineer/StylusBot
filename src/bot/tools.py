@@ -113,3 +113,4 @@ def cadastrar_atendimento(input: StateCadastrarAtendimento):
     return {"atendimentoCadastrado": True}
 
 tools = [consultar_imoveis, consultar_perguntas_frequentes, cadastrar_atendimento]
+tools_de_cadastro_de_atendimento = [cadastrar_atendimento]
