@@ -1,19 +1,34 @@
 from langgraph.prebuilt.tool_node import ToolNode
-from tools import tools
-from custom_types import State, prompt_atendente
+from tools import tools, cadastrar_atendimento
+from custom_types import State, prompt_atendente, RespostaNodeCadastrarAtendimento
 from llms import llm
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage
 
 tools_node = ToolNode(tools)
+tool_node_cadastrar_atendimento = ToolNode([cadastrar_atendimento])
 
-# def criar_atendimento(st)
+def cadastrar_atendimento(state: State):
+    system_message = SystemMessage(
+        "Você é o StylusBot, atendente virtual da Imobiliária Stylus. Sempre se apresente antes de tudo."
+        "Antes de responder às dúvidas do cliente, solicite os seguintes dados de atendimento: nome, telefone e mídia de origem "
+        "(a mídia corresponde ao canal pelo qual o cliente conheceu a imobiliária). "
+        "Após coletar todas as informações, cadastre o atendimento. "
+    )
+
+    conversation_messages = state["messages"]
+
+    prompt = [system_message] + conversation_messages
+
+    response = llm.bind_tools([cadastrar_atendimento]).invoke(prompt)
+
+    return {"messages": response, **state}
 
 def consultar_ou_responder(state: State):
     prompt = prompt_atendente.invoke(state["messages"])
     response = llm.bind_tools(tools).invoke(prompt)
     # print(f"Resposta de consulta ou responder: ", response)
-    return {"messages": response}
+    return {"messages": response, **state}
 
 def responder(state: State):
     """Gerando respostas com base nas ferramentas"""
@@ -38,4 +53,4 @@ def responder(state: State):
     
     prompt = [system_message] + conversation_messages
 
-    return {'messages': llm.invoke(prompt)}
+    return {'messages': llm.invoke(prompt), **state}

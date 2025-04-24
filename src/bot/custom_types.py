@@ -1,36 +1,41 @@
-from typing_extensions import TypedDict, Annotated, Optional, List
+from typing_extensions import TypedDict, Annotated, List, Literal
 from langgraph.graph.message import add_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from pydantic import BaseModel, Field
 
 class State(TypedDict):
-    messages: Annotated[list[str], add_messages]
     atendimentoCadastrado: bool = False
+    messages: Annotated[list[str], add_messages]
+
+class RespostaNodeCadastrarAtendimento(BaseModel):
+    """Resposta do nó de cadastrar atendimento"""
+    mensagem: str = Field(description="Mensagem ao usuário")
+    statusCadastro: bool = Field(description="Status do cadastro do atendimento")
 
 class StateAtendimento(TypedDict):
-    Codigo: Optional[str]
-    Finalidade: Optional[str]
+    Finalidade: str
     ClienteNome: str
     ClienteTelefone: str
-    ClienteEmail: Optional[str]
-    Midia: Optional[str]
-    Tipo: Optional[str]
-    SituacaoDescarte: Optional[str]
-    ImoveisCarrinho: Optional[List[str]]
-    PerfilQuartos: Optional[int]
-    PerfilBanhos: Optional[int]
-    PerfilSuites: Optional[int]
-    PerfilVagas: Optional[int]
-    PerfilValorDe: Optional[float]
-    PerfilValorAte: Optional[float]
-    PerfilAreaInternaDe: Optional[float]
-    PerfilAreaInternaAte: Optional[float]
-    PerfilTipos: Optional[List[str]]
-    PerfilCidades: Optional[List[str]]
-    PerfilBairros: Optional[List[str]]
-    PerfilRegioes: Optional[List[str]]
-    Valor: Optional[float]
-    PerfilSistema: Optional[str]
-    Indicacao: Optional[str]
+    ClienteEmail: str
+    Midia: str
+    Status: Literal["Em atendimento", "Cliente desistiu", "Negócio finalizado", "Outro"]
+    PerfilQuartos: int
+    PerfilBanheiros: int
+    PerfilSuites: int
+    PerfilVagas: int
+    PerfilValorDe: float
+    PerfilValorAte: float
+    PerfilAreaInternaDe: float    
+    PerfilAreaInternaAte: float
+    PerfilTipos: List[str]
+    PerfilCidades: List[str]
+    PerfilBairros: List[str]
+    PerfilRegioes: List[str]
+
+class StateCadastrarAtendimento(TypedDict):
+    ClienteNome: str
+    ClienteTelefone: str
+    Midia: str
 
 prompt_atendente = ChatPromptTemplate.from_messages(
     [
@@ -44,3 +49,7 @@ prompt_atendente = ChatPromptTemplate.from_messages(
         MessagesPlaceholder(variable_name="messages")
     ]
 )
+
+def validar_cadastro_atendimento(state: State):
+    print("State:", state)
+    return state["atendimentoCadastrado"]

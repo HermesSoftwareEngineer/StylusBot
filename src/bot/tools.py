@@ -7,7 +7,7 @@ from sqlalchemy import MetaData
 from typing_extensions import Annotated, TypedDict
 import pandas as pd
 from vector_stores import vector_store_FAQ
-from custom_types import StateAtendimento
+from custom_types import StateCadastrarAtendimento
 from db_atendimentos import engine as db_atendimentos
 
 class QueryOutput(TypedDict):
@@ -88,7 +88,7 @@ def consultar_perguntas_frequentes(input: str):
 #     return {"result": result}
     
 @tool
-def criar_atendimento(input: StateAtendimento):
+def cadastrar_atendimento(input: StateCadastrarAtendimento):
     """Criar um atendimento e cadastrá-lo diretamente no banco de dados."""
     metadata = MetaData()
     metadata.reflect(bind=db_atendimentos)
@@ -99,30 +99,9 @@ def criar_atendimento(input: StateAtendimento):
 
     # Construa o dicionário com os dados do atendimento
     atendimento_data = {
-        "Codigo": input["Codigo"],
-        "Finalidade": input["Finalidade"],
         "ClienteNome": input["ClienteNome"],
         "ClienteTelefone": input["ClienteTelefone"],
-        "ClienteEmail": input["ClienteEmail"],
         "Midia": input["Midia"],
-        "Tipo": input["Tipo"],
-        "SituacaoDescarte": input["SituacaoDescarte"],
-        "ImoveisCarrinho": ",".join(input["ImoveisCarrinho"]),  # Lista convertida para string
-        "PerfilQuartos": input["PerfilQuartos"],
-        "PerfilBanhos": input["PerfilBanhos"],
-        "PerfilSuites": input["PerfilSuites"],
-        "PerfilVagas": input["PerfilVagas"],
-        "PerfilValorDe": input["PerfilValorDe"],
-        "PerfilValorAte": input["PerfilValorAte"],
-        "PerfilAreaInternaDe": input["PerfilAreaInternaDe"],
-        "PerfilAreaInternaAte": input["PerfilAreaInternaAte"],
-        "PerfilTipos": ",".join(input["PerfilTipos"]),  # Lista convertida para string
-        "PerfilCidades": ",".join(input["PerfilCidades"]),  # Lista convertida para string
-        "PerfilBairros": ",".join(input["PerfilBairros"]),  # Lista convertida para string
-        "PerfilRegioes": ",".join(input["PerfilRegioes"]),  # Lista convertida para string
-        "Valor": input["Valor"],
-        "PerfilSistema": input["PerfilSistema"],
-        "Indicacao": input["Indicacao"],
     }
 
     # Insere os dados no banco de dados
@@ -133,4 +112,4 @@ def criar_atendimento(input: StateAtendimento):
 
     return {"atendimentoCadastrado": True}
 
-tools = [consultar_imoveis, consultar_perguntas_frequentes]
+tools = [consultar_imoveis, consultar_perguntas_frequentes, cadastrar_atendimento]
