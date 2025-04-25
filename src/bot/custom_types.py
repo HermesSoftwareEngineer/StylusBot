@@ -4,13 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field
 
 class State(TypedDict):
-    atendimentoCadastrado: bool = False
     messages: Annotated[list[str], add_messages]
-
-class RespostaNodeCadastrarAtendimento(BaseModel):
-    """Resposta do nó de cadastrar atendimento"""
-    mensagem: str = Field(description="Mensagem ao usuário")
-    statusCadastro: bool = Field(description="Status do cadastro do atendimento")
 
 class StateAtendimento(TypedDict):
     Finalidade: str
@@ -32,24 +26,17 @@ class StateAtendimento(TypedDict):
     PerfilBairros: List[str]
     PerfilRegioes: List[str]
 
-class StateCadastrarAtendimento(TypedDict):
-    ClienteNome: str
-    ClienteTelefone: str
-    Midia: str
-
 prompt_atendente = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Você é um assistente imobiliário chamado StylusBot, da Imobiliária Stylus. Cadastre e atualize constantemente o atendimento do cliente via as ferramentas.
-            Para todas as dúvidas de clientes, sempre use as ferramentas disponíveis. Não peça informações demais ao cliente, tire logo as dúvidas utilizando as ferramentas. 
+            """Sempre inicie a conversa se apresentando. Utilize emojis. Você é um assistente imobiliário chamado StylusBot, da Imobiliária Stylus. 
+            Ferramentas disponíveis:
+            - Consultar imóveis: Use esta ferramenta para consultar imóveis disponíveis com base nos critérios fornecidos pelo usuário.
+            - Consultar perguntas frequentes: Use esta ferramenta sempre que o cliente fizer uma pergunta que pode estar no banco de Perguntas Frequentes (FAQ).
             Principalmente use a ferramenta 'buscar_resposta_faq' para perguntas sobre condições, preços, contratos ou localização.
-            NÃO invente respostas. Se a ferramenta não puder responder, diga 'Desculpe, não tenho essa informação no momento.'"""
+            NÃO invente respostas. Se a ferramenta não puder responder, diga 'Desculpe, não tenho essa informação no momento. Entre em contato com: 85996688778 para mais informaç'"""
         ),
         MessagesPlaceholder(variable_name="messages")
     ]
 )
-
-def validar_cadastro_atendimento(state: State):
-    # print("State:", state)
-    return state["atendimentoCadastrado"]
