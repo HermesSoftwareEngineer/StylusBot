@@ -1,17 +1,33 @@
 from langgraph.prebuilt.tool_node import ToolNode
 from tools import tools
-from custom_types import State, prompt_atendente
+from custom_types import State, prompt_atendente, prompt_analista, ResultadoAnalise
 from llms import llm
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage
+from vector_stores import vector_store_prompts
 
 tools_node = ToolNode(tools)
+
+def analisar_mensagem(state: State):
+
+    prompts = vector_store_prompts.similarity_search(state['messages'][-1].content, k=5)
+    
+    system_message = f"""
+    Última mensagem do cliente: {state['messages'][-1].content}\n\n
+    Últimas mensagens da conversa: {state['messages'][-40:]}\n\n
+    Prompts disponíveis:\n
+    {prompts}\n\n
+    """
+    prompt = prompt_analista.invoke(system_message)
+    responder = llm.with_structured_output(ResultadoAnalise).invoke(prompt)
+    print("RESPOSTA DO LLM: ", responder)
+    return {**state, "prompt": responder["answer"]}
 
 def consultar_ou_responder(state: State):
     prompt = prompt_atendente.invoke(state["messages"][-40:])
     response = llm.bind_tools(tools).invoke(prompt)
     # tools, tool_choice='any'
-    print("RESPOSTA DO LLM: ", response)
+    # print("RESPOSTA DO LLM: ", response)
     return {"messages": response}
 
 def responder(state: State):

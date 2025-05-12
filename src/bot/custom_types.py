@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 class State(TypedDict):
     messages: Annotated[list[str], add_messages]
+    prompt: int
 
 class StateAtendimento(TypedDict):
     Finalidade: str
@@ -26,6 +27,14 @@ class StateAtendimento(TypedDict):
     PerfilBairros: List[str]
     PerfilRegioes: List[str]
 
+class ResultadoAnalise(BaseModel):
+    """
+    Modelo utilizado para selecionar o prompt mais adequado para o LLM.
+    """
+    answer: int = Field(
+        description="Número correspondente ao prompt ideal para o LLM, baseado na análise do contexto."
+    )
+
 prompt_atendente = ChatPromptTemplate.from_messages(
     [
         (
@@ -38,5 +47,19 @@ prompt_atendente = ChatPromptTemplate.from_messages(
             NÃO invente respostas. Se a ferramenta não puder responder, diga 'Desculpe, não tenho essa informação no momento. Entre em contato com: 85996688778 para mais informaç'"""
         ),
         MessagesPlaceholder(variable_name="messages")
+    ]
+)
+
+prompt_analista = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            Você é StylusBot, um assistente imobiliário da Imobiliária Stylus.
+            Sua tarefa é analisar a mensagem do cliente e determinar o contexto mais adequado para gerar uma resposta precisa e útil.
+            Considere as ferramentas disponíveis e as informações fornecidas pelo cliente.
+            Retorne apenas a numeração do prompt escolhido, sem adicionar explicações ou comentários.
+            """
+        )
     ]
 )

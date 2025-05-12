@@ -20,3 +20,9 @@ split_FAQ = text_splitter1.split_documents(docs_FAQ)
 
 # Adiciona os documentos aos vector_stores
 vector_store_FAQ.add_documents(split_FAQ)
+
+loader_prompts = TextLoader(r'src\bot\prompts.txt')
+docs_prompts = loader_prompts.load()
+text_splitter2 = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=150)
+split_prompts = text_splitter2.split_documents(docs_prompts)
+vector_store_prompts = InMemoryVectorStore(embeddings)
