@@ -59,6 +59,10 @@ prompt_analista = ChatPromptTemplate.from_messages(
             Sua tarefa é analisar a mensagem do cliente e determinar o contexto mais adequado para gerar uma resposta precisa e útil.
             Considere as ferramentas disponíveis e as informações fornecidas pelo cliente.
             Retorne apenas a numeração do prompt escolhido, sem adicionar explicações ou comentários.
+
+            Última mensagem do cliente: {input}\n\n
+            Últimas mensagens da conversa: {messages}\n\n
+            Prompts disponíveis:\n{prompts}\n\n
             """
         )
     ]

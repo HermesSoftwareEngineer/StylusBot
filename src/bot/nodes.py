@@ -9,19 +9,39 @@ from vector_stores import vector_store_prompts
 tools_node = ToolNode(tools)
 
 def analisar_mensagem(state: State):
-
+    # Busca os prompts mais similares à última mensagem do cliente
     prompts = vector_store_prompts.similarity_search(state['messages'][-1].content, k=5)
+    print("Prompts encontrados:", prompts)
     
-    system_message = f"""
-    Última mensagem do cliente: {state['messages'][-1].content}\n\n
-    Últimas mensagens da conversa: {state['messages'][-40:]}\n\n
-    Prompts disponíveis:\n
-    {prompts}\n\n
-    """
-    prompt = prompt_analista.invoke(system_message)
-    responder = llm.with_structured_output(ResultadoAnalise).invoke(prompt)
-    print("RESPOSTA DO LLM: ", responder)
-    return {**state, "prompt": responder["answer"]}
+    # Caso nenhum prompt seja encontrado, define uma mensagem padrão
+    if not prompts:
+        prompts = ["0 - Nenhum prompt encontrado"]
+    
+    # Cria a mensagem do sistema com as informações relevantes
+    
+    ultima_mensagem = state['messages'][-1].content
+    prompts = "\n\n".join([prompt for prompt in prompts])
+    conversation_messages = "\n".join([m.content for m in state['messages'][-10:]])
+
+    # Prepara o input para o modelo de análise
+    prompt_input = {
+        "input": ultima_mensagem, 
+        "prompts": prompts,
+        "messages": conversation_messages
+    }
+    prompt_value = prompt_analista.invoke(prompt_input)
+    prompt = SystemMessage(content=prompt_value.to_string()) 
+    print("Prompt gerado:", prompt)
+    
+    # Gera a resposta estruturada com base no modelo
+    try:
+        resposta = llm.invoke(prompt)
+        print("RESPOSTA DO LLM:", resposta)
+    except Exception as e:
+        print("Erro ao invocar o LLM:", e)
+
+    # Retorna o estado atualizado com a resposta gerada
+    return {**state, "prompt": resposta["answer"]}
 
 def consultar_ou_responder(state: State):
     prompt = prompt_atendente.invoke(state["messages"][-40:])
