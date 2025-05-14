@@ -30,18 +30,16 @@ def analisar_mensagem(state: State):
         "messages": conversation_messages
     }
     prompt_value = prompt_analista.invoke(prompt_input)
-    prompt = SystemMessage(content=prompt_value.to_string()) 
-    print("Prompt gerado:", prompt)
+    prompt = prompt_value.to_string()
     
     # Gera a resposta estruturada com base no modelo
     try:
-        resposta = llm.invoke(prompt)
-        print("RESPOSTA DO LLM:", resposta)
+        resposta = llm.with_structured_output(ResultadoAnalise).invoke(prompt)
     except Exception as e:
         print("Erro ao invocar o LLM:", e)
 
     # Retorna o estado atualizado com a resposta gerada
-    return {**state, "prompt": resposta["answer"]}
+    return {**state, "prompt": resposta.answer}
 
 def consultar_ou_responder(state: State):
     prompt = prompt_atendente.invoke(state["messages"][-40:])
