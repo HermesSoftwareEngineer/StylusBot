@@ -1,59 +1,15 @@
-PROMPT 1: 
-Procure na base de dados de imóveis imóveis disponíveis para alugar com base no bairro informado.
+PROMPT 1:
+- Contexto: O cliente quer saber a documentação necessária para alugar um imóvel.
+- Prompt: Utilize a ferramenta consultar_FAQ para buscar e informar quais documentos são exigidos para o envio e aprovação na locação.
 
-PROMPT 2: 
-Procure na base de dados de imóveis imóveis disponíveis para compra com base no valor informado.
+PROMPT 2:
+- Contexto: O cliente deseja saber quais são as formas de garantia aceitas para locação.
+- Prompt: Utilize a ferramenta consultar_FAQ para identificar e informar todas as formas de garantia permitidas para alugar um imóvel.
 
-PROMPT 3: 
-Procure na base de dados de imóveis imóveis disponíveis com base no número de quartos e banheiros informados.
+PROMPT 3:
+- Contexto: O usuário está cumprimentando.
+- Prompt: Responda com um cumprimento gentil, apresente-se como assistente virtual da Imobiliária Stylus e ofereça ajuda para esclarecer dúvidas sobre locação.
 
-PROMPT 4: 
-Procure na base de dados de imóveis imóveis disponíveis com garagem para o número de vagas informado.
-
-PROMPT 5: 
-Procure na base de dados de imóveis imóveis disponíveis com área interna dentro do intervalo informado.
-
-PROMPT 6: 
-Procure na base de dados de imóveis imóveis disponíveis com vista para o mar.
-
-PROMPT 7: 
-Procure na base de dados de imóveis imóveis disponíveis em bairros tranquilos e seguros.
-
-PROMPT 8: 
-Procure na base de dados de imóveis imóveis comerciais disponíveis para locação ou compra.
-
-PROMPT 9: 
-Procure na base de dados de imóveis imóveis disponíveis com piscina.
-
-PROMPT 10: 
-Procure na base de dados de imóveis imóveis disponíveis próximos a escolas e hospitais.
-
-PROMPT 11: 
-Procure em FAQ informações sobre as condições de pagamento para imóveis financiados.
-
-PROMPT 12: 
-Procure em FAQ informações sobre os documentos necessários para alugar um imóvel.
-
-PROMPT 13: 
-Procure em FAQ informações sobre as taxas de condomínio para apartamentos.
-
-PROMPT 14: 
-Procure em FAQ informações sobre as condições para rescindir um contrato de aluguel.
-
-PROMPT 15: 
-Procure em FAQ informações sobre os benefícios de comprar um imóvel na planta.
-
-PROMPT 16: 
-Procure em FAQ informações sobre as taxas cobradas pela imobiliária para intermediação.
-
-PROMPT 17: 
-Procure na base de dados de imóveis imóveis disponíveis para locação temporária.
-
-PROMPT 18: 
-Procure na base de dados de imóveis imóveis disponíveis na faixa de valor informada.
-
-PROMPT 19: 
-Procure na base de dados de imóveis imóveis disponíveis com suíte e varanda.
-
-PROMPT 20: 
-Procure na base de dados de imóveis imóveis disponíveis na região informada.
+PROMPT 4:
+- Contexto: O usuário solicita atendimento com um humano.
+- Prompt: Acione a ferramenta de transferência para atendimento humano e informe ao usuário que ele será direcionado para um atendente.

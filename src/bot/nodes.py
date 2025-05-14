@@ -10,8 +10,8 @@ tools_node = ToolNode(tools)
 
 def analisar_mensagem(state: State):
     # Busca os prompts mais similares à última mensagem do cliente
+    print("Última mensagem do cliente:", state['messages'][-1].content)
     prompts = vector_store_prompts.similarity_search(state['messages'][-1].content, k=5)
-    print("Prompts encontrados:", prompts)
     
     # Caso nenhum prompt seja encontrado, define uma mensagem padrão
     if not prompts:
@@ -20,8 +20,13 @@ def analisar_mensagem(state: State):
     # Cria a mensagem do sistema com as informações relevantes
     
     ultima_mensagem = state['messages'][-1].content
-    prompts = "\n\n".join([prompt for prompt in prompts])
+    prompts = "\n\n".join(
+        [f"Título: {conteudo['titulo']}\nContexto: {conteudo['contexto']}\nPrompt: {conteudo['prompt']}" 
+        for prompt in prompts 
+        for conteudo in prompt["conteudos"]]
+    )
     conversation_messages = "\n".join([m.content for m in state['messages'][-10:]])
+    print("Prompts encontrados:", prompts)
 
     # Prepara o input para o modelo de análise
     prompt_input = {
